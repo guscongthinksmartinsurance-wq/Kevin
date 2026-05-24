@@ -1,39 +1,19 @@
+import streamlit as st
 import pandas as pd
 
-# 1. Đọc file log từ Ringcentral (Anh đổi lại tên file cho đúng thực tế nhé)
-df = pd.read_csv("ringcentral_logs.csv")
+st.title("Công cụ Phân tích Log Cuộc gọi Ringcentral")
 
-# LƯU Ý: Anh kiểm tra xem trong file của anh, cột số điện thoại tên là gì, cột tên nhân viên tên là gì rồi thay vào đây:
-phone_col = "Customer Phone"  # Tên cột số điện thoại khách hàng
-agent_col = "Agent Name"  # Tên cột tên nhân viên
+# Tạo nút cho phép chọn file từ máy tính quăng vào web app
+uploaded_file = st.file_uploader("Nhấp vào đây để chọn hoặc kéo thả file log Ringcentral (.csv) của anh vào", type=["csv"])
 
-# --- PHẦN 1: BỨC TRANH TỔNG TOÀN CÔNG TY ---
-# Gom hết data lại, xem cả công ty đã "cày" được bao nhiêu số phone không trùng nhau
-tong_so_duy_nhat_cong_ty = df[phone_col].nunique()
+if uploaded_file is not None:
+    # Đọc trực tiếp file vừa upload lên
+    df = pd.read_csv(uploaded_file)
+    
+    # --- TOÀN BỘ LOGIC TÍNH TOÁN CỦA ANH ĐẶT Ở ĐÂY ---
+    st.success("Đã tải file lên thành công! Đang xử lý dữ liệu...")
+    
+    # (Đoạn code tính toán nunique() và hiển thị bảng hôm bữa em đưa anh quăng vào đây)
 
-print("-" * 50)
-print(
-    f"BỨC TRANH TỔNG: Toàn công ty đã gọi tổng cộng {tong_so_duy_nhat_cong_ty:,} số điện thoại duy nhất."
-)
-print("-" * 50)
-
-
-# --- PHẦN 2: CHI TIẾT THEO TỪNG NHÂN VIÊN ---
-# Đếm số điện thoại duy nhất của từng người (ai trùng của người đó thì tự trừ, người khác gọi vẫn tính)
-thong_ke_nhan_vien = df.groupby(agent_col)[phone_col].nunique().reset_index()
-
-# Đổi tên cột cho dễ đọc
-thong_ke_nhan_vien.columns = ["Tên Nhân Viên", "Số Phone Duy Nhất Đã Gọi"]
-
-# Sắp xếp từ người gọi nhiều nhất xuống ít nhất để anh dễ đánh giá Top Performers
-thong_ke_nhan_vien = thong_ke_nhan_vien.sort_values(
-    by="Số Phone Duy Nhất Đã Gọi", ascending=False
-)
-
-# In kết quả ra màn hình
-print("\nCHI TIẾT TỪNG NHÂN VIÊN (Đã loại trùng của riêng từng người):")
-print(thong_ke_nhan_vien.to_string(index=False))
-
-# --- PHẦN 3: XUẤT BÁO CÁO (Tùy chọn) ---
-# Nếu anh muốn xuất cái bảng này ra file Excel gửi cho team hoặc lưu trữ:
-# thong_ke_nhan_vien.to_excel('bao_cao_60_ngay_cuoc_goi.xlsx', index=False)
+else:
+    st.info("Vui lòng upload file log cuộc gọi để hệ thống bắt đầu tính toán.")
